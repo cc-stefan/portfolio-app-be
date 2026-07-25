@@ -11,7 +11,7 @@ NestJS 11 backend for the portfolio application. The current backend provides:
 - Prisma ORM on PostgreSQL
 - Swagger docs for the current API surface
 
-For the intended build order from zero to the current system, see [CONSTRUCTION_STEPS.md](/Users/ccs/development/portfolio-app/portfolio-app-be/CONSTRUCTION_STEPS.md).
+For the intended build order from zero to the current system, see [CONSTRUCTION_STEPS.md](CONSTRUCTION_STEPS.md).
 
 ## Stack
 
@@ -38,6 +38,13 @@ Supported project locales today:
 The backend does not do runtime machine translation. Public project endpoints resolve translations manually and fall back to the default locale when the requested locale is missing.
 
 ## Local setup
+
+Requirements:
+
+- Node.js 24.x
+- pnpm 10.34.5
+
+Run `nvm use` from this directory if you use nvm.
 
 ### 1. Install dependencies
 

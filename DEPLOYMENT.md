@@ -47,8 +47,8 @@ DATABASE_URL=postgresql://USER:PASSWORD@HOST/DB_NAME?sslmode=require
 Name: portfolio-api
 Runtime: Node
 Branch: main
-Build Command: corepack enable && corepack prepare pnpm@9 --activate && pnpm install --frozen-lockfile && pnpm prisma migrate deploy && pnpm build
-Start Command: corepack enable && corepack prepare pnpm@9 --activate && pnpm start:prod
+Build Command: corepack enable && corepack prepare pnpm@10.34.5 --activate && pnpm install --frozen-lockfile && pnpm prisma migrate deploy && pnpm build
+Start Command: corepack enable && corepack prepare pnpm@10.34.5 --activate && pnpm start:prod
 Health Check Path: /api/health
 ```
 
@@ -145,15 +145,17 @@ Notes:
 2. Choose `Project`.
 3. Import the frontend repo.
 4. Let Vercel detect `Next.js`.
-5. Add these environment variables:
+5. In Build and Deployment settings, select Node.js `24.x`. The frontend
+   `package.json` also declares `24.x` and is authoritative for deployments.
+6. Add these environment variables:
 
 ```env
 NEXT_PUBLIC_PORTFOLIO_API_BASE_URL=https://<your-render-service>.onrender.com/api
 NEXT_PUBLIC_SITE_URL=https://<your-vercel-project>.vercel.app
 ```
 
-6. Deploy the project.
-7. Copy the Vercel production URL after deploy finishes.
+7. Deploy the project.
+8. Copy the Vercel production URL after deploy finishes.
 
 Important:
 

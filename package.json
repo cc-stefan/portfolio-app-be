@@ -5,6 +5,7 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "postinstall": "prisma generate",
     "prebuild": "prisma generate",
@@ -30,7 +31,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "engines": {
-    "node": ">=20.9 <23"
+    "node": "24.x"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1044.0",
@@ -85,18 +86,6 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/engines",
-      "bcrypt",
-      "prisma"
-    ],
-    "ignoredBuiltDependencies": [
-      "@nestjs/core",
-      "@scarf/scarf",
-      "unrs-resolver"
-    ]
   },
   "jest": {
     "moduleFileExtensions": [
