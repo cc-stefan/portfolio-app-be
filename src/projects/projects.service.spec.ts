@@ -22,6 +22,7 @@ describe('ProjectsService', () => {
   let service: ProjectsService;
   const prismaService = {
     project: {
+      count: jest.fn(),
       create: jest.fn(),
       findMany: jest.fn(),
       findFirst: jest.fn(),
@@ -182,6 +183,36 @@ describe('ProjectsService', () => {
     await expect(
       service.findPublishedBySlug('missing-project'),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('returns a bounded admin project page with pagination metadata', async () => {
+    prismaService.project.findMany.mockResolvedValue([]);
+    prismaService.project.count.mockResolvedValue(13);
+
+    const result = await service.findAllAdmin({
+      page: 2,
+      pageSize: 6,
+    });
+
+    expect(prismaService.project.findMany).toHaveBeenCalledWith({
+      orderBy: [
+        { featured: 'desc' },
+        { displayOrder: 'asc' },
+        { createdAt: 'desc' },
+      ],
+      include: projectTranslationsInclude,
+      skip: 6,
+      take: 6,
+    });
+    expect(result).toEqual({
+      items: [],
+      pagination: {
+        page: 2,
+        pageSize: 6,
+        totalItems: 13,
+        totalPages: 3,
+      },
+    });
   });
 
   it('falls back to the default locale when the requested translation is missing', async () => {

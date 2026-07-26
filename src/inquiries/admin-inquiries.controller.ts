@@ -9,22 +9,32 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiExtraModels,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { InquiryResponseDto } from './dto/inquiry-response.dto';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { resolvePagination } from '../common/pagination';
+import {
+  InquiryResponseDto,
+  InquirySummaryResponseDto,
+  PaginatedInquiryResponseDto,
+} from './dto/inquiry-response.dto';
 import { UpdateInquiryDto } from './dto/update-inquiry.dto';
 import { InquiriesService } from './inquiries.service';
 
 @ApiTags('inquiries')
+@ApiExtraModels(InquiryResponseDto, PaginatedInquiryResponseDto)
 @Controller('admin/inquiries')
 @Roles(UserRole.ADMIN)
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -33,9 +43,27 @@ export class AdminInquiriesController {
   constructor(private readonly inquiriesService: InquiriesService) {}
 
   @Get()
-  @ApiOkResponse({ type: InquiryResponseDto, isArray: true })
-  findAll() {
-    return this.inquiriesService.findAllAdmin();
+  @ApiOkResponse({
+    schema: {
+      oneOf: [
+        {
+          type: 'array',
+          items: { $ref: getSchemaPath(InquiryResponseDto) },
+        },
+        { $ref: getSchemaPath(PaginatedInquiryResponseDto) },
+      ],
+    },
+  })
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.inquiriesService.findAllAdmin(
+      resolvePagination(query.page, query.pageSize, 8),
+    );
+  }
+
+  @Get('summary')
+  @ApiOkResponse({ type: InquirySummaryResponseDto })
+  getSummary() {
+    return this.inquiriesService.getAdminSummary();
   }
 
   @Get(':id')

@@ -14,6 +14,10 @@ describe('AdminService', () => {
       count: jest.fn(),
       findMany: jest.fn(),
     },
+    inquiry: {
+      count: jest.fn(),
+      findMany: jest.fn(),
+    },
   };
 
   beforeEach(async () => {
@@ -63,6 +67,19 @@ describe('AdminService', () => {
         updatedAt: new Date('2026-04-25T09:00:00.000Z'),
       },
     ];
+    const recentInquiries = [
+      {
+        id: '4655853c-01a8-46f7-a685-cd45e6b2f3bd',
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        message: 'I would like to discuss a frontend project.',
+        status: 'NEW',
+        isRead: false,
+        adminNotes: null,
+        createdAt: new Date('2026-04-27T09:00:00.000Z'),
+        updatedAt: new Date('2026-04-27T09:00:00.000Z'),
+      },
+    ];
 
     prismaService.project.count
       .mockResolvedValueOnce(4)
@@ -70,8 +87,14 @@ describe('AdminService', () => {
       .mockResolvedValueOnce(2)
       .mockResolvedValueOnce(1);
     prismaService.user.count.mockResolvedValueOnce(5).mockResolvedValueOnce(2);
+    prismaService.inquiry.count
+      .mockResolvedValueOnce(6)
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(3);
     prismaService.project.findMany.mockResolvedValue(recentProjects);
     prismaService.user.findMany.mockResolvedValue(recentUsers);
+    prismaService.inquiry.findMany.mockResolvedValue(recentInquiries);
 
     const result = await service.getDashboardOverview();
 
@@ -97,6 +120,22 @@ describe('AdminService', () => {
     expect(prismaService.user.count).toHaveBeenNthCalledWith(2, {
       where: {
         role: UserRole.ADMIN,
+      },
+    });
+    expect(prismaService.inquiry.count).toHaveBeenNthCalledWith(1);
+    expect(prismaService.inquiry.count).toHaveBeenNthCalledWith(2, {
+      where: {
+        isRead: false,
+      },
+    });
+    expect(prismaService.inquiry.count).toHaveBeenNthCalledWith(3, {
+      where: {
+        status: 'IN_REVIEW',
+      },
+    });
+    expect(prismaService.inquiry.count).toHaveBeenNthCalledWith(4, {
+      where: {
+        status: 'RESOLVED',
       },
     });
     expect(prismaService.project.findMany).toHaveBeenCalledWith({
@@ -136,6 +175,21 @@ describe('AdminService', () => {
         updatedAt: true,
       },
     });
+    expect(prismaService.inquiry.findMany).toHaveBeenCalledWith({
+      take: 5,
+      orderBy: [{ createdAt: 'desc' }, { updatedAt: 'desc' }],
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        message: true,
+        status: true,
+        isRead: true,
+        adminNotes: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
     expect(result.generatedAt).toBeInstanceOf(Date);
     expect(result.stats).toEqual({
       totalProjects: 4,
@@ -146,8 +200,13 @@ describe('AdminService', () => {
       totalUsers: 5,
       adminUsers: 2,
       regularUsers: 3,
+      totalInquiries: 6,
+      unreadInquiries: 2,
+      inReviewInquiries: 1,
+      resolvedInquiries: 3,
     });
     expect(result.recentProjects).toEqual(recentProjects);
     expect(result.recentUsers).toEqual(recentUsers);
+    expect(result.recentInquiries).toEqual(recentInquiries);
   });
 });

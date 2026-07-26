@@ -9,6 +9,7 @@ describe('InquiriesService', () => {
   const prismaService = {
     inquiry: {
       create: jest.fn(),
+      count: jest.fn(),
       findMany: jest.fn(),
       findUnique: jest.fn(),
       update: jest.fn(),
@@ -70,8 +71,51 @@ describe('InquiriesService', () => {
     await service.findAllAdmin();
 
     expect(prismaService.inquiry.findMany).toHaveBeenCalledWith({
-      orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ isRead: 'asc' }, { status: 'asc' }, { createdAt: 'desc' }],
     });
+  });
+
+  it('returns a bounded inquiry page with pagination metadata', async () => {
+    prismaService.inquiry.findMany.mockResolvedValue([]);
+    prismaService.inquiry.count.mockResolvedValue(17);
+
+    const result = await service.findAllAdmin({
+      page: 2,
+      pageSize: 8,
+    });
+
+    expect(prismaService.inquiry.findMany).toHaveBeenCalledWith({
+      orderBy: [{ isRead: 'asc' }, { status: 'asc' }, { createdAt: 'desc' }],
+      skip: 8,
+      take: 8,
+    });
+    expect(result).toEqual({
+      items: [],
+      pagination: {
+        page: 2,
+        pageSize: 8,
+        totalItems: 17,
+        totalPages: 3,
+      },
+    });
+  });
+
+  it('returns inquiry totals without loading inquiry records', async () => {
+    prismaService.inquiry.count
+      .mockResolvedValueOnce(12)
+      .mockResolvedValueOnce(3)
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(5);
+
+    const result = await service.getAdminSummary();
+
+    expect(result).toEqual({
+      total: 12,
+      unread: 3,
+      inReview: 2,
+      resolved: 5,
+    });
+    expect(prismaService.inquiry.findMany).not.toHaveBeenCalled();
   });
 
   it('throws when an admin inquiry lookup misses', async () => {

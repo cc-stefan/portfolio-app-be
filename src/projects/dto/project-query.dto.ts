@@ -1,6 +1,7 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, IntersectionType } from '@nestjs/swagger';
 import { Transform, type TransformFnParams } from 'class-transformer';
 import { IsIn, IsOptional, IsString } from 'class-validator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { supportedProjectLocales } from '../project-locales';
 import { normalizeProjectLocale } from '../projects.utils';
 
@@ -20,3 +21,8 @@ export class ProjectLocaleQueryDto {
   @IsIn(supportedProjectLocales)
   locale?: string;
 }
+
+export class ProjectListQueryDto extends IntersectionType(
+  ProjectLocaleQueryDto,
+  PaginationQueryDto,
+) {}

@@ -5,6 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import {
+  createPaginationMetadata,
+  getPaginationDatabaseArgs,
+  type PaginatedResult,
+  type PaginationParams,
+} from '../common/pagination';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadedImageFile, UploadsService } from '../uploads/uploads.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -79,18 +85,43 @@ export class ProjectsService {
     }
   }
 
-  async findAllPublished(locale?: string): Promise<PublicProjectRecord[]> {
-    const projects = await this.prisma.project.findMany({
+  async findAllPublished(
+    locale?: string,
+    pagination?: PaginationParams | null,
+  ): Promise<PublicProjectRecord[] | PaginatedResult<PublicProjectRecord>> {
+    const query = {
       where: {
         published: true,
       },
       orderBy: projectOrderBy,
       include: projectWithTranslationsInclude,
-    });
+    } satisfies Prisma.ProjectFindManyArgs;
 
-    return projects
+    if (!pagination) {
+      const projects = await this.prisma.project.findMany(query);
+
+      return projects
+        .map((project) => this.mapProjectToPublicProject(project, locale))
+        .filter((project): project is PublicProjectRecord => project !== null);
+    }
+
+    const [projects, totalItems] = await Promise.all([
+      this.prisma.project.findMany({
+        ...query,
+        ...getPaginationDatabaseArgs(pagination),
+      }),
+      this.prisma.project.count({
+        where: query.where,
+      }),
+    ]);
+    const items = projects
       .map((project) => this.mapProjectToPublicProject(project, locale))
       .filter((project): project is PublicProjectRecord => project !== null);
+
+    return {
+      items,
+      pagination: createPaginationMetadata(pagination, totalItems),
+    };
   }
 
   async findPublishedBySlug(
@@ -119,11 +150,33 @@ export class ProjectsService {
     return localizedProject;
   }
 
-  async findAllAdmin(): Promise<ProjectWithTranslationsRecord[]> {
-    return this.prisma.project.findMany({
+  async findAllAdmin(
+    pagination?: PaginationParams | null,
+  ): Promise<
+    | ProjectWithTranslationsRecord[]
+    | PaginatedResult<ProjectWithTranslationsRecord>
+  > {
+    const query = {
       orderBy: projectOrderBy,
       include: projectWithTranslationsInclude,
-    });
+    } satisfies Prisma.ProjectFindManyArgs;
+
+    if (!pagination) {
+      return this.prisma.project.findMany(query);
+    }
+
+    const [items, totalItems] = await Promise.all([
+      this.prisma.project.findMany({
+        ...query,
+        ...getPaginationDatabaseArgs(pagination),
+      }),
+      this.prisma.project.count(),
+    ]);
+
+    return {
+      items,
+      pagination: createPaginationMetadata(pagination, totalItems),
+    };
   }
 
   async findOneAdmin(id: string): Promise<ProjectWithTranslationsRecord> {

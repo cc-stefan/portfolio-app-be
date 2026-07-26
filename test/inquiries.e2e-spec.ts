@@ -179,8 +179,47 @@ describe('AdminInquiriesController (e2e)', () => {
       ]);
 
     expect(findManySpy).toHaveBeenCalledWith({
-      orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ isRead: 'asc' }, { status: 'asc' }, { createdAt: 'desc' }],
     });
+  });
+
+  it('returns a paginated inquiry response when pagination is requested', async () => {
+    jest
+      .spyOn(prismaService.inquiry, 'findMany')
+      .mockResolvedValue([] as never);
+    jest.spyOn(prismaService.inquiry, 'count').mockResolvedValue(17);
+
+    await request(httpServer)
+      .get('/api/admin/inquiries?page=2&pageSize=8')
+      .expect(200)
+      .expect({
+        items: [],
+        pagination: {
+          page: 2,
+          pageSize: 8,
+          totalItems: 17,
+          totalPages: 3,
+        },
+      });
+  });
+
+  it('returns inquiry totals for bounded admin views', async () => {
+    jest
+      .spyOn(prismaService.inquiry, 'count')
+      .mockResolvedValueOnce(12)
+      .mockResolvedValueOnce(3)
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(5);
+
+    await request(httpServer)
+      .get('/api/admin/inquiries/summary')
+      .expect(200)
+      .expect({
+        total: 12,
+        unread: 3,
+        inReview: 2,
+        resolved: 5,
+      });
   });
 
   it('returns a single inquiry for the admin detail view', async () => {

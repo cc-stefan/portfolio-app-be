@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PaginationMetadataDto } from '../../common/dto/pagination-response.dto';
 import { supportedProjectLocales } from '../project-locales';
 import { ProjectTranslationResponseDto } from './project-translation.dto';
 
@@ -85,4 +86,30 @@ export class AdminProjectResponseDto extends BaseProjectResponseDto {
     isArray: true,
   })
   translations: ProjectTranslationResponseDto[];
+}
+
+export class PaginatedPublicProjectResponseDto {
+  @ApiProperty({
+    type: PublicProjectResponseDto,
+    isArray: true,
+  })
+  items: PublicProjectResponseDto[];
+
+  @ApiProperty({
+    type: PaginationMetadataDto,
+  })
+  pagination: PaginationMetadataDto;
+}
+
+export class PaginatedAdminProjectResponseDto {
+  @ApiProperty({
+    type: AdminProjectResponseDto,
+    isArray: true,
+  })
+  items: AdminProjectResponseDto[];
+
+  @ApiProperty({
+    type: PaginationMetadataDto,
+  })
+  pagination: PaginationMetadataDto;
 }

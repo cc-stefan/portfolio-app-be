@@ -1,10 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Inquiry, Prisma } from '@prisma/client';
+import { Inquiry, InquiryStatus, Prisma } from '@prisma/client';
+import {
+  createPaginationMetadata,
+  getPaginationDatabaseArgs,
+  type PaginatedResult,
+  type PaginationParams,
+} from '../common/pagination';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInquiryDto } from './dto/create-inquiry.dto';
 import { UpdateInquiryDto } from './dto/update-inquiry.dto';
 
 const inquiryOrderBy: Prisma.InquiryOrderByWithRelationInput[] = [
+  {
+    isRead: 'asc',
+  },
   {
     status: 'asc',
   },
@@ -32,10 +41,57 @@ export class InquiriesService {
     };
   }
 
-  async findAllAdmin(): Promise<Inquiry[]> {
-    return this.prisma.inquiry.findMany({
+  async findAllAdmin(
+    pagination?: PaginationParams | null,
+  ): Promise<Inquiry[] | PaginatedResult<Inquiry>> {
+    const query = {
       orderBy: inquiryOrderBy,
-    });
+    } satisfies Prisma.InquiryFindManyArgs;
+
+    if (!pagination) {
+      return this.prisma.inquiry.findMany(query);
+    }
+
+    const [items, totalItems] = await Promise.all([
+      this.prisma.inquiry.findMany({
+        ...query,
+        ...getPaginationDatabaseArgs(pagination),
+      }),
+      this.prisma.inquiry.count(),
+    ]);
+
+    return {
+      items,
+      pagination: createPaginationMetadata(pagination, totalItems),
+    };
+  }
+
+  async getAdminSummary() {
+    const [total, unread, inReview, resolved] = await Promise.all([
+      this.prisma.inquiry.count(),
+      this.prisma.inquiry.count({
+        where: {
+          isRead: false,
+        },
+      }),
+      this.prisma.inquiry.count({
+        where: {
+          status: InquiryStatus.IN_REVIEW,
+        },
+      }),
+      this.prisma.inquiry.count({
+        where: {
+          status: InquiryStatus.RESOLVED,
+        },
+      }),
+    ]);
+
+    return {
+      total,
+      unread,
+      inReview,
+      resolved,
+    };
   }
 
   async findOneAdmin(id: string): Promise<Inquiry> {

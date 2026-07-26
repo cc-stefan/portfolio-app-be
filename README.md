@@ -175,6 +175,7 @@ pnpm admin:create -- --email admin@example.com --password StrongPass123 --first-
 ### Admin inquiries (`ADMIN`)
 
 - `GET /api/admin/inquiries`
+- `GET /api/admin/inquiries/summary`
 - `GET /api/admin/inquiries/:id`
 - `PATCH /api/admin/inquiries/:id`
 - `DELETE /api/admin/inquiries/:id`
@@ -187,6 +188,7 @@ pnpm admin:create -- --email admin@example.com --password StrongPass123 --first-
 Optional query:
 
 - `locale=en|ro`
+- `page` and `pageSize` (maximum `50`)
 
 Public project responses include:
 
@@ -205,6 +207,21 @@ Public project responses include:
 - `POST /api/admin/projects/:id/image`
 - `DELETE /api/admin/projects/:id/image`
 - `DELETE /api/admin/projects/:id`
+
+The project and inquiry list endpoints preserve their original array response
+when pagination is omitted. Supplying `page` or `pageSize` returns:
+
+```json
+{
+  "items": [],
+  "pagination": {
+    "page": 1,
+    "pageSize": 9,
+    "totalItems": 0,
+    "totalPages": 0
+  }
+}
+```
 
 ### Admin dashboard (`ADMIN`)
 

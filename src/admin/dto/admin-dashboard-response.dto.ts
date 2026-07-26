@@ -1,5 +1,6 @@
 import { UserRole } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { InquiryResponseDto } from '../../inquiries/dto/inquiry-response.dto';
 import { ProjectTranslationResponseDto } from '../../projects/dto/project-translation.dto';
 
 export class AdminDashboardStatsDto {
@@ -26,6 +27,18 @@ export class AdminDashboardStatsDto {
 
   @ApiProperty()
   regularUsers: number;
+
+  @ApiProperty()
+  totalInquiries: number;
+
+  @ApiProperty()
+  unreadInquiries: number;
+
+  @ApiProperty()
+  inReviewInquiries: number;
+
+  @ApiProperty()
+  resolvedInquiries: number;
 }
 
 export class AdminDashboardProjectDto {
@@ -109,4 +122,10 @@ export class AdminDashboardOverviewDto {
     isArray: true,
   })
   recentUsers: AdminDashboardUserDto[];
+
+  @ApiProperty({
+    type: InquiryResponseDto,
+    isArray: true,
+  })
+  recentInquiries: InquiryResponseDto[];
 }
