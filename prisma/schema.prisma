@@ -79,3 +79,12 @@ model Inquiry {
   @@index([status, createdAt])
   @@map("inquiries")
 }
+
+model PortfolioAvailability {
+  id                        Int       @id @default(1)
+  availableForCollaboration Boolean   @default(true) @map("available_for_collaboration")
+  availableFrom             DateTime? @map("available_from") @db.Date
+  updatedAt                 DateTime  @updatedAt @map("updated_at")
+
+  @@map("portfolio_availability")
+}

@@ -4,6 +4,7 @@ import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { AvailabilityModule } from './availability/availability.module';
 import { validateEnv } from './common/config/env.validation';
 import { InquiriesModule } from './inquiries/inquiries.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -21,6 +22,7 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     UsersModule,
     AuthModule,
+    AvailabilityModule,
     InquiriesModule,
     ProjectsModule,
     AdminModule,

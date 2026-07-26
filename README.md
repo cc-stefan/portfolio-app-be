@@ -8,6 +8,7 @@ NestJS 11 backend for the portfolio application. The current backend provides:
 - public project listing/detail endpoints
 - admin project CRUD with dedicated image upload/remove endpoints
 - normalized multilingual project content with manual translations
+- public collaboration availability with admin-managed return date
 - Prisma ORM on PostgreSQL
 - Swagger docs for the current API surface
 
@@ -29,6 +30,7 @@ The stable project model is:
 - `project_translations`: manually maintained localized project content by `(project_id, locale)`
 - `users`
 - `inquiries`
+- `portfolio_availability`: the current collaboration status and optional return date
 
 Supported project locales today:
 
@@ -166,6 +168,10 @@ pnpm admin:create -- --email admin@example.com --password StrongPass123 --first-
 
 - `POST /api/inquiries`
 
+### Public availability
+
+- `GET /api/availability`
+
 ### Admin inquiries (`ADMIN`)
 
 - `GET /api/admin/inquiries`
@@ -203,6 +209,11 @@ Public project responses include:
 ### Admin dashboard (`ADMIN`)
 
 - `GET /api/admin/dashboard`
+
+### Admin availability (`ADMIN`)
+
+- `GET /api/admin/availability`
+- `PATCH /api/admin/availability`
 
 ## Example payloads
 
@@ -253,6 +264,18 @@ Public project responses include:
   "adminNotes": "Followed up and waiting for a reply."
 }
 ```
+
+### Update collaboration availability
+
+```json
+{
+  "availableForCollaboration": false,
+  "availableFrom": "2026-09-01"
+}
+```
+
+Set `availableFrom` to `null` when no return date should be shown. Switching
+`availableForCollaboration` to `true` clears the return date automatically.
 
 ### Create project
 
